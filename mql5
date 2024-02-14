@@ -1,0 +1,68 @@
+
+// SSL Indicator - Trading Robot Code
+// Developer: Forex Robot Easy Team
+// Developer's Site: forexroboteasy.com
+
+#property copyright 'Forex Robot Easy Team'
+#property link 'forexroboteasy.com'
+
+// Indicator parameters
+input int CalculationPeriod = 14; // Calculation period for SSL Indicator
+
+// Global variables
+double sslLineUpBuffer[];
+double sslLineDownBuffer[];
+
+// Initialization function
+int OnInit()
+{
+    // Initialize indicator buffers
+    ArrayResize(sslLineUpBuffer, CalculationPeriod);
+    ArrayResize(sslLineDownBuffer, CalculationPeriod);
+    
+    // Set indicator buffers
+    SetIndexBuffer(0, sslLineUpBuffer);
+    SetIndexBuffer(1, sslLineDownBuffer);
+    
+    return(INIT_SUCCEEDED);
+}
+
+// Deinitialization function
+void OnDeinit(const int reason)
+{
+    // Clear indicator buffers
+    ArrayFree(sslLineUpBuffer);
+    ArrayFree(sslLineDownBuffer);
+}
+
+// Start function
+void OnStart()
+{
+    // Get the current price
+    double currentPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+    
+    // Calculate SSL Indicator values
+    for(int i = CalculationPeriod - 1; i >= 0; i--)
+    {
+        sslLineUpBuffer[i] = iBarShift(NULL, 0, i) > 0 ? iHigh(NULL, 0, i) : currentPrice;
+        sslLineDownBuffer[i] = iBarShift(NULL, 0, i) > 0 ? iLow(NULL, 0, i) : currentPrice;
+    }
+    
+    // Check for crossover signals
+    if(currentPrice > sslLineUpBuffer[1] && currentPrice < sslLineDownBuffer[1])
+    {
+        // Generate long-term signal
+        Print('Signal: Long-term situation');
+    }
+    else if(currentPrice < sslLineDownBuffer[1] && currentPrice > sslLineUpBuffer[1])
+    {
+        // Generate short-term signal
+        Print('Signal: Short-term situation');
+    }
+}
+
+// Error handling function
+void OnError(const int errorCode)
+{
+    Print('Error: ', errorCode);
+}
